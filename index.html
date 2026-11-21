@@ -24,6 +24,7 @@
       --serif: 'Cormorant Garamond', serif;
       --sans: 'Plus Jakarta Sans', sans-serif;
       --mono: 'Space Mono', monospace;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     body.night {
@@ -50,13 +51,72 @@
       font-family: var(--sans);
       line-height: 1.65;
       overflow-x: hidden;
-      transition: background-color 0.3s ease, color 0.3s ease;
+      transition: background-color 0.4s ease, color 0.4s ease;
     }
 
     a { color: inherit; text-decoration: none; }
 
     /* =========================================================
-       2. KHUNG HEADER & SIDEBAR DAY/NIGHT DỌC BÊN TRÁI
+       2. PRELOADER & THANH TIẾN TRÌNH CUỘN TRANG
+       ========================================================= */
+    .preloader {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      transition: opacity 0.7s var(--ease), visibility 0.7s var(--ease);
+    }
+
+    .preloader.hide {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .preloader-text {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.32em;
+      color: var(--blue);
+    }
+
+    .preloader-bar {
+      width: 160px;
+      height: 2px;
+      background: var(--line);
+      overflow: hidden;
+    }
+
+    .preloader-fill {
+      width: 100%;
+      height: 100%;
+      background: var(--blue);
+      transform-origin: left;
+      animation: loadBar 0.85s var(--ease) forwards;
+    }
+
+    @keyframes loadBar {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+
+    .scroll-progress {
+      position: fixed;
+      top: 0; left: 0;
+      height: 2.5px;
+      width: 0%;
+      background: var(--blue);
+      z-index: 120;
+      transition: width 0.1s linear;
+    }
+
+    /* =========================================================
+       3. HEADER & SIDEBAR DAY/NIGHT
        ========================================================= */
     .topbar {
       position: fixed;
@@ -70,14 +130,24 @@
       font-size: 11px;
       letter-spacing: 0.12em;
       color: var(--blue);
-      background: linear-gradient(to bottom, var(--bg) 60%, transparent);
+      background: linear-gradient(to bottom, var(--bg) 65%, transparent);
     }
 
     .topbar-left {
       display: flex;
       align-items: center;
       gap: 10px;
-      opacity: 0.85;
+      opacity: 0.9;
+    }
+
+    .spin-star {
+      display: inline-block;
+      animation: spinSlow 8s linear infinite;
+    }
+
+    @keyframes spinSlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
     .topbar-nav {
@@ -87,23 +157,41 @@
       flex-wrap: wrap;
     }
 
-    .topbar-nav a:hover { text-decoration: underline; }
+    .topbar-nav a {
+      position: relative;
+      transition: opacity 0.2s;
+    }
+
+    .topbar-nav a:not(.pill-btn)::after {
+      content: "";
+      position: absolute;
+      left: 0; bottom: -3px;
+      width: 100%; height: 1px;
+      background: var(--blue);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.3s var(--ease);
+    }
+
+    .topbar-nav a:not(.pill-btn):hover::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
 
     .pill-btn {
       border: 1px solid var(--blue);
       border-radius: 999px;
       padding: 4px 14px;
       font-weight: 700;
-      transition: all 0.2s;
+      transition: all 0.25s var(--ease);
     }
 
     .pill-btn:hover {
       background: var(--blue);
       color: #fff;
-      text-decoration: none !important;
+      transform: translateY(-1px);
     }
 
-    /* Thanh DAY / NIGHT nằm dọc góc trái dưới giống bản gốc */
     .side-theme {
       position: fixed;
       left: 14px;
@@ -112,9 +200,6 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.15em;
     }
 
     .side-theme button {
@@ -130,6 +215,7 @@
       font-family: var(--mono);
       font-size: 10px;
       letter-spacing: 0.15em;
+      transition: color 0.2s;
     }
 
     .side-theme button.active {
@@ -137,17 +223,11 @@
       font-weight: 700;
     }
 
-    .side-theme button::before {
-      content: "□";
-      font-size: 10px;
-    }
-
-    .side-theme button.active::before {
-      content: "■";
-    }
+    .side-theme button::before { content: "□"; font-size: 10px; }
+    .side-theme button.active::before { content: "■"; }
 
     /* =========================================================
-       3. LAYOUT CHUNG
+       4. LAYOUT & ANIMATION CUỘN TRANG (SCROLL REVEAL)
        ========================================================= */
     .container {
       max-width: 1040px;
@@ -159,6 +239,17 @@
       padding: 96px 0;
       border-bottom: 1px solid var(--line);
       position: relative;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(36px);
+      transition: opacity 0.85s var(--ease), transform 0.85s var(--ease);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .eyebrow {
@@ -192,7 +283,7 @@
     }
 
     /* =========================================================
-       4. HERO SECTION
+       5. HERO SECTION + HIỆU ỨNG MỞ ĐẦU
        ========================================================= */
     .hero {
       min-height: 92vh;
@@ -202,6 +293,21 @@
       align-items: center;
       text-align: center;
       padding-top: 110px;
+    }
+
+    .hero-anim {
+      opacity: 0;
+      transform: translateY(24px);
+      animation: heroIn 0.9s var(--ease) forwards;
+    }
+    .hero-anim.d1 { animation-delay: 0.55s; }
+    .hero-anim.d2 { animation-delay: 0.7s; }
+    .hero-anim.d3 { animation-delay: 0.85s; }
+    .hero-anim.d4 { animation-delay: 1.0s; }
+    .hero-anim.d5 { animation-delay: 1.15s; }
+
+    @keyframes heroIn {
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .hero-years {
@@ -237,12 +343,24 @@
       border: 1px solid var(--blue);
       background: var(--card);
       margin-bottom: 26px;
+      overflow: hidden;
+      transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease);
+    }
+
+    .hero-avatar-frame:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 30px rgba(0, 88, 221, 0.15);
     }
 
     .hero-avatar-frame img {
       width: 100%;
       height: auto;
       display: block;
+      transition: transform 0.6s var(--ease);
+    }
+
+    .hero-avatar-frame:hover img {
+      transform: scale(1.04);
     }
 
     .scroll-hint {
@@ -250,11 +368,16 @@
       font-size: 11px;
       letter-spacing: 0.28em;
       color: var(--blue);
-      opacity: 0.8;
+      animation: floatDown 2.2s ease-in-out infinite;
+    }
+
+    @keyframes floatDown {
+      0%, 100% { transform: translateY(0); opacity: 0.65; }
+      50% { transform: translateY(7px); opacity: 1; }
     }
 
     /* =========================================================
-       5. WELCOME / MESSAGE INTRO
+       6. WELCOME & ABOUT ME
        ========================================================= */
     .welcome-box {
       text-align: center;
@@ -278,9 +401,6 @@
       font-weight: 700;
     }
 
-    /* =========================================================
-       6. ABOUT ME
-       ========================================================= */
     .about-grid {
       display: grid;
       grid-template-columns: 290px 1fr;
@@ -295,13 +415,17 @@
       border: 1px solid var(--blue);
       padding: 8px;
       background: var(--bg);
+      overflow: hidden;
     }
 
     .profile-photo img {
       width: 100%;
-      height: auto; /* Mọi tỷ lệ ảnh đều giữ nguyên, không bị méo */
+      height: auto;
       display: block;
+      transition: transform 0.6s var(--ease);
     }
+
+    .profile-photo:hover img { transform: scale(1.04); }
 
     .about-name {
       font-family: var(--serif);
@@ -323,7 +447,6 @@
     }
 
     .about-block { margin-bottom: 22px; }
-
     .about-list { list-style: none; }
     .about-list li {
       position: relative;
@@ -340,7 +463,7 @@
     }
 
     /* =========================================================
-       7. MY STORY — GALLERY MỌI KÍCH CỠ ẢNH + CHÚ THÍCH NGẮN
+       7. MY STORY — GALLERY MỌI KÍCH CỠ ẢNH
        ========================================================= */
     .story-masonry {
       column-count: 3;
@@ -354,19 +477,29 @@
       border: 1px solid var(--line);
       padding: 10px;
       cursor: zoom-in;
-      transition: transform 0.25s ease, border-color 0.25s ease;
+      transition: transform 0.4s var(--ease), border-color 0.3s ease, box-shadow 0.4s var(--ease);
     }
 
     .story-card:hover {
-      transform: translateY(-4px);
+      transform: translateY(-5px);
       border-color: var(--blue);
+      box-shadow: 0 12px 26px rgba(0, 88, 221, 0.12);
+    }
+
+    .story-img-wrap {
+      overflow: hidden;
+      background: rgba(0, 88, 221, 0.05);
     }
 
     .story-card img {
       width: 100%;
-      height: auto; /* Tự động ôm theo chiều cao thật của ảnh (ngang/dọc/vuông) */
+      height: auto;
       display: block;
-      background: rgba(0, 88, 221, 0.05);
+      transition: transform 0.6s var(--ease);
+    }
+
+    .story-card:hover img {
+      transform: scale(1.05);
     }
 
     .story-meta {
@@ -386,29 +519,41 @@
       line-height: 1.5;
     }
 
-    /* Lightbox xem ảnh phóng to */
+    /* Lightbox xem ảnh phóng to mượt */
     .lightbox {
       position: fixed;
       inset: 0;
       background: rgba(10, 16, 29, 0.88);
-      backdrop-filter: blur(6px);
+      backdrop-filter: blur(8px);
       z-index: 200;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
       flex-direction: column;
       padding: 24px;
       cursor: zoom-out;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.35s var(--ease), visibility 0.35s var(--ease);
     }
 
-    .lightbox.open { display: flex; }
+    .lightbox.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
 
     .lightbox img {
       max-width: 90vw;
       max-height: 78vh;
       border: 2px solid #fff;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      transform: scale(0.92);
+      transition: transform 0.4s var(--ease);
     }
+
+    .lightbox.open img { transform: scale(1); }
 
     .lightbox-cap {
       margin-top: 14px;
@@ -419,11 +564,9 @@
     }
 
     /* =========================================================
-       8. DATE & BIRTH
+       8. DATE & BIRTH + GUESTBOOK
        ========================================================= */
-    .date-birth {
-      text-align: center;
-    }
+    .date-birth { text-align: center; }
 
     .big-date {
       font-family: var(--serif);
@@ -441,9 +584,6 @@
       margin-top: 10px;
     }
 
-    /* =========================================================
-       9. MESSAGE FORM & GUESTBOOK WALL
-       ========================================================= */
     .msg-grid {
       display: grid;
       grid-template-columns: 1fr 1.15fr;
@@ -451,11 +591,13 @@
       align-items: start;
     }
 
-    .msg-guide {
+    .msg-guide, .msg-form {
       background: var(--card);
       border: 1px solid var(--line);
       padding: 28px;
     }
+
+    .msg-form { border-color: var(--blue); }
 
     .msg-guide h3 {
       font-family: var(--serif);
@@ -468,12 +610,6 @@
       font-size: 14px;
       color: var(--muted);
       margin-bottom: 10px;
-    }
-
-    .msg-form {
-      background: var(--card);
-      border: 1px solid var(--blue);
-      padding: 28px;
     }
 
     .field { margin-bottom: 18px; }
@@ -497,11 +633,10 @@
       font-family: var(--sans);
       font-size: 14px;
       outline: none;
+      transition: border-color 0.25s;
     }
 
-    .field input:focus, .field textarea:focus {
-      border-color: var(--blue);
-    }
+    .field input:focus, .field textarea:focus { border-color: var(--blue); }
 
     .btn-primary {
       width: 100%;
@@ -514,12 +649,14 @@
       font-weight: 700;
       letter-spacing: 0.14em;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.25s, transform 0.2s;
     }
 
-    .btn-primary:hover { background: var(--blue-dark); }
+    .btn-primary:hover {
+      background: var(--blue-dark);
+      transform: translateY(-2px);
+    }
 
-    /* Danh sách lời nhắn */
     .messages-wall {
       margin-top: 44px;
       display: grid;
@@ -532,7 +669,10 @@
       border: 1px solid var(--line);
       border-top: 3px solid var(--blue);
       padding: 18px 20px;
+      transition: transform 0.3s var(--ease);
     }
+
+    .wall-card:hover { transform: translateY(-3px); }
 
     .wall-head {
       display: flex;
@@ -549,19 +689,11 @@
       letter-spacing: 0.06em;
     }
 
-    .wall-date {
-      color: var(--muted);
-      font-size: 10.5px;
-    }
-
-    .wall-text {
-      font-size: 14px;
-      font-style: italic;
-      color: var(--text);
-    }
+    .wall-date { color: var(--muted); font-size: 10.5px; }
+    .wall-text { font-size: 14px; font-style: italic; color: var(--text); }
 
     /* =========================================================
-       10. FOOTER & NÚT MỞ MODAL CONNECT
+       9. FOOTER & MODAL CONNECT HÌNH THOI XANH COBALT
        ========================================================= */
     .footer-area {
       text-align: center;
@@ -581,12 +713,13 @@
       letter-spacing: 0.18em;
       cursor: pointer;
       margin-bottom: 34px;
-      transition: transform 0.2s, background 0.2s;
+      transition: transform 0.3s var(--ease), background 0.25s, box-shadow 0.3s;
     }
 
     .view-links-btn:hover {
       background: var(--blue-dark);
-      transform: translateY(-2px);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(0, 88, 221, 0.25);
     }
 
     .footer-quote {
@@ -610,9 +743,7 @@
       opacity: 0.85;
     }
 
-    /* =========================================================
-       11. MODAL CONNECT HÌNH THOI XANH COBALT Y CHANG ẢNH GỐC
-       ========================================================= */
+    /* Modal hình thoi có animation bung ra mượt */
     .connect-modal {
       position: fixed;
       inset: 0;
@@ -620,31 +751,39 @@
       background-color: var(--bg);
       background-image: radial-gradient(var(--bg-dot) 1px, transparent 1px);
       background-size: 18px 18px;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.45s var(--ease), visibility 0.45s var(--ease);
     }
 
-    .connect-modal.open { display: flex; }
+    .connect-modal.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
 
-    /* Khối hình thoi xanh dương khổng lồ ở giữa */
     .diamond-shape {
       position: absolute;
       width: 145vmax;
       height: 145vmax;
       background: #0058dd;
-      transform: rotate(45deg);
+      transform: rotate(45deg) scale(0.75);
       z-index: 1;
       pointer-events: none;
+      transition: transform 0.65s var(--ease);
     }
 
-    /* Thu gọn hình thoi để lộ 4 góc nền giấy giống ảnh mẫu */
     @media (min-width: 769px) {
-      .diamond-shape {
-        width: 82vmax;
-        height: 82vmax;
-      }
+      .diamond-shape { width: 82vmax; height: 82vmax; }
+    }
+
+    .connect-modal.open .diamond-shape {
+      transform: rotate(45deg) scale(1);
     }
 
     .connect-inner {
@@ -658,6 +797,14 @@
       gap: 40px;
       align-items: center;
       color: #ffffff;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s var(--ease) 0.15s, transform 0.5s var(--ease) 0.15s;
+    }
+
+    .connect-modal.open .connect-inner {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .connect-title-col small {
@@ -677,11 +824,7 @@
       line-height: 1;
     }
 
-    .connect-info-col {
-      font-family: var(--mono);
-      font-size: 12px;
-    }
-
+    .connect-info-col { font-family: var(--mono); font-size: 12px; }
     .c-group { margin-bottom: 20px; }
 
     .c-badge {
@@ -723,14 +866,11 @@
       font-size: 11px;
       letter-spacing: 0.14em;
       cursor: pointer;
+      transition: all 0.25s;
     }
 
-    .close-modal-btn:hover {
-      background: #ffffff;
-      color: #0058dd;
-    }
+    .close-modal-btn:hover { background: #ffffff; color: #0058dd; }
 
-    /* Chữ trang trí 2 góc dưới của modal giống ảnh mẫu */
     .modal-wm-left, .modal-wm-right {
       position: absolute;
       bottom: 14px;
@@ -744,12 +884,9 @@
     .modal-wm-left { left: 26px; }
     .modal-wm-right { right: 26px; }
 
-    /* Responsive */
     @media (max-width: 820px) {
       .topbar-left { display: none; }
-      .about-grid, .msg-grid, .messages-wall, .connect-inner {
-        grid-template-columns: 1fr;
-      }
+      .about-grid, .msg-grid, .messages-wall, .connect-inner { grid-template-columns: 1fr; }
       .story-masonry { column-count: 2; }
       .side-theme { left: 6px; }
     }
@@ -762,10 +899,19 @@
 </head>
 <body>
 
+  <!-- MÀN HÌNH CHỜ MỞ TRANG -->
+  <div class="preloader" id="preloader">
+    <div class="preloader-text">HỒ NGỌC YẾN — 2026</div>
+    <div class="preloader-bar"><div class="preloader-fill"></div></div>
+  </div>
+
+  <!-- THANH TIẾN TRÌNH CUỘN -->
+  <div class="scroll-progress" id="scrollProgress"></div>
+
   <!-- THANH MENU TRÊN CÙNG -->
   <header class="topbar">
     <div class="topbar-left">
-      <span>✦</span>
+      <span class="spin-star">✦</span>
       <span>2012.10.18 — IN VIETNAM</span>
     </div>
     <nav class="topbar-nav">
@@ -779,7 +925,7 @@
     </nav>
   </header>
 
-  <!-- NÚT DAY / NIGHT NẰM DỌC GÓC TRÁI -->
+  <!-- NÚT DAY / NIGHT -->
   <div class="side-theme">
     <button id="dayBtn" class="active" onclick="setTheme('day')">DAY</button>
     <button id="nightBtn" onclick="setTheme('night')">NIGHT</button>
@@ -789,21 +935,19 @@
 
     <!-- 1. HOME / HERO -->
     <section id="home" class="hero">
-      <div class="hero-years">2012 — 2026</div>
-      <!-- ĐỔI TÊN CỦA BẠN -->
-      <h1 class="hero-name">Hồ Ngọc Yến</h1>
-      <p class="hero-sub">
+      <div class="hero-years hero-anim d1">2012 — 2026</div>
+      <h1 class="hero-name hero-anim d2">Hồ Ngọc Yến</h1>
+      <p class="hero-sub hero-anim d3">
         A QUIET SPACE TO KEEP MY FAVORITE SNAPSHOTS, MILESTONES, AND MEMORIES.
       </p>
-      <div class="hero-avatar-frame">
-        <!-- ĐỔI ẢNH CHÍNH CỦA BẠN (MỌI KÍCH CỠ ĐỀU ĐƯỢC) -->
+      <div class="hero-avatar-frame hero-anim d4">
         <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop" alt="Main portrait">
       </div>
-      <div class="scroll-hint">SCROLL DOWN ↓</div>
+      <div class="scroll-hint hero-anim d5">SCROLL DOWN ↓</div>
     </section>
 
-    <!-- 2. WELCOME / MESSAGE INTRO -->
-    <section id="message-intro">
+    <!-- 2. WELCOME -->
+    <section id="message-intro" class="reveal">
       <div class="welcome-box">
         <span class="eyebrow">(TO MY BELOVED GUESTS)</span>
         <h2 class="sec-heading">MESSAGE</h2>
@@ -816,28 +960,24 @@
     </section>
 
     <!-- 3. ABOUT ME -->
-    <section id="about">
+    <section id="about" class="reveal">
       <span class="eyebrow">(PROFILE)</span>
       <h2 class="sec-heading">About Me</h2>
       <span class="spaced-label">A B O U T &nbsp; M E</span>
 
-      <div class="about-grid">
+      <div class="about-grid reveal">
         <div class="profile-photo">
-          <!-- ĐỔI ẢNH PROFILE CỦA BẠN -->
           <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop" alt="Profile">
         </div>
 
         <div>
-          <!-- ĐỔI THÔNG TIN CÁ NHÂN CỦA BẠN -->
           <h3 class="about-name">Hồ Ngọc Yến</h3>
-
           <div class="about-block">
             <span class="tag-blue">PROFILE</span>
             <p style="font-size: 14.5px;">
               Sinh năm 2012, quê quán TP. Đà Nẵng. Hiện đang là học sinh lớp 9, yêu thích Sinh học, Tiếng Anh và thiết kế sáng tạo.
             </p>
           </div>
-
           <div class="about-block">
             <span class="tag-blue">PERSONALITY</span>
             <ul class="about-list">
@@ -850,71 +990,71 @@
       </div>
     </section>
 
-    <!-- 4. MY STORY — CHỈ ẢNH (MỌI KÍCH CỠ) + CHÚ THÍCH NGẮN -->
-    <section id="story">
+    <!-- 4. MY STORY -->
+    <section id="story" class="reveal">
       <span class="eyebrow">(THEN AND NOW)</span>
       <h2 class="sec-heading">My Story</h2>
       <span class="spaced-label">S N A P S H O T S &nbsp; &amp; &nbsp; C A P T I O N S</span>
 
-      <!-- Thư viện Masonry: chèn ảnh ngang, dọc hay vuông đều tự khớp đẹp mắt -->
       <div class="story-masonry">
-
-        <!-- ẢNH 1 (Dọc) -->
-        <div class="story-card" onclick="openLightbox(this)">
-          <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop" alt="Biển chiều">
+        <div class="story-card reveal" onclick="openLightbox(this)">
+          <div class="story-img-wrap">
+            <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop" alt="Biển chiều">
+          </div>
           <div class="story-meta"><span>#01</span><span>2026.06</span></div>
           <p class="story-caption">Buổi chiều gió mát bên bờ biển Đà Nẵng.</p>
         </div>
 
-        <!-- ẢNH 2 (Ngang) -->
-        <div class="story-card" onclick="openLightbox(this)">
-          <img src="https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=800&auto=format&fit=crop" alt="Góc học tập">
+        <div class="story-card reveal" onclick="openLightbox(this)">
+          <div class="story-img-wrap">
+            <img src="https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=800&auto=format&fit=crop" alt="Góc học tập">
+          </div>
           <div class="story-meta"><span>#02</span><span>2026.08</span></div>
           <p class="story-caption">Góc bàn học quen thuộc những ngày ôn đội tuyển.</p>
         </div>
 
-        <!-- ẢNH 3 (Vuông) -->
-        <div class="story-card" onclick="openLightbox(this)">
-          <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=600&auto=format&fit=crop" alt="Playlist">
+        <div class="story-card reveal" onclick="openLightbox(this)">
+          <div class="story-img-wrap">
+            <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=600&auto=format&fit=crop" alt="Playlist">
+          </div>
           <div class="story-meta"><span>#03</span><span>2026.09</span></div>
           <p class="story-caption">Tai nghe và playlist yêu thích lúc tan tầm.</p>
         </div>
 
-        <!-- ẢNH 4 (Dọc cao) -->
-        <div class="story-card" onclick="openLightbox(this)">
-          <img src="https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?w=600&auto=format&fit=crop" alt="Sinh nhật">
+        <div class="story-card reveal" onclick="openLightbox(this)">
+          <div class="story-img-wrap">
+            <img src="https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?w=600&auto=format&fit=crop" alt="Sinh nhật">
+          </div>
           <div class="story-meta"><span>#04</span><span>2026.10</span></div>
           <p class="story-caption">Đánh dấu tuổi 14 thật nhẹ nhàng.</p>
         </div>
 
-        <!-- ẢNH 5 (Ngang) -->
-        <div class="story-card" onclick="openLightbox(this)">
-          <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop" alt="Bầu trời">
+        <div class="story-card reveal" onclick="openLightbox(this)">
+          <div class="story-img-wrap">
+            <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop" alt="Bầu trời">
+          </div>
           <div class="story-meta"><span>#05</span><span>2026.11</span></div>
           <p class="story-caption">Một ngày trời nhiều mây nhưng tâm trạng rất vui.</p>
         </div>
-
-        <!-- Muốn thêm ảnh mới: chỉ cần copy 1 khối <div class="story-card">...</div> dán vào đây -->
-
       </div>
     </section>
 
     <!-- 5. DATE & BIRTH -->
-    <section id="date-birth" class="date-birth">
+    <section id="date-birth" class="date-birth reveal">
       <span class="eyebrow">(ONE SPECIAL DAY)</span>
       <h2 class="sec-heading">DATE &amp; BIRTH</h2>
       <div class="big-date">2012.10.18</div>
       <div class="date-sub">DA NANG CITY • VIETNAM</div>
     </section>
 
-    <!-- 6. FORM GỬI LỜI NHẮN + DANH SÁCH LỜI NHẮN -->
-    <section id="guestbook">
+    <!-- 6. GUESTBOOK -->
+    <section id="guestbook" class="reveal">
       <span class="eyebrow">(GUESTBOOK)</span>
       <h2 class="sec-heading">Message to Me</h2>
       <span class="spaced-label">L E A V E &nbsp; Y O U R &nbsp; W O R D S</span>
 
       <div class="msg-grid">
-        <div class="msg-guide">
+        <div class="msg-guide reveal">
           <h3>Gửi lời nhắn cho mình</h3>
           <p>Cảm ơn bạn đã ghé thăm trang nhỏ này. Nếu có điều gì muốn nhắn gửi, hãy viết vào khung bên cạnh nhé.</p>
           <p><strong>✦ Tên của bạn:</strong> Nhập tên hoặc nickname (tối đa 25 ký tự).</p>
@@ -922,7 +1062,7 @@
           <p>Mọi lời nhắn gửi đi sẽ xuất hiện ngay ở bảng bên dưới để lưu làm kỷ niệm.</p>
         </div>
 
-        <form class="msg-form" id="guestbookForm">
+        <form class="msg-form reveal" id="guestbookForm">
           <div class="field">
             <label for="senderName">
               <span>1. TÊN CỦA BẠN</span>
@@ -930,7 +1070,6 @@
             </label>
             <input type="text" id="senderName" maxlength="25" placeholder="Ví dụ: Miu..." required>
           </div>
-
           <div class="field">
             <label for="senderMsg">
               <span>2. LỜI NHẮN</span>
@@ -938,186 +1077,15 @@
             </label>
             <textarea id="senderMsg" rows="4" maxlength="200" placeholder="Viết lời nhắn của bạn tại đây..." required></textarea>
           </div>
-
           <button type="submit" class="btn-primary">GỬI LỜI NHẮN →</button>
         </form>
       </div>
 
-      <!-- Bảng hiển thị các lời nhắn -->
       <div id="messages-wall" class="messages-wall">
-        <div class="wall-card">
+        <div class="wall-card reveal">
           <div class="wall-head">
             <span class="wall-name">Be de bong cho</span>
             <span class="wall-date">2026.11.21 16:00</span>
           </div>
           <p class="wall-text">Thank you for scrolling this far. Please leave a little note behind to cherish as a lasting memory...</p>
         </div>
-
-        <div class="wall-card">
-          <div class="wall-head">
-            <span class="wall-name">Miu</span>
-            <span class="wall-date">2026.11.21 16:15</span>
-          </div>
-          <p class="wall-text">Chúc cậu luôn học tốt và đạt mục tiêu năm nay nha!</p>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- 7. FOOTER + NÚT MỞ MODAL CONNECT HÌNH THOI -->
-  <footer class="footer-area">
-    <button class="view-links-btn" onclick="openConnect()">VIEW LINKS →</button>
-    <p class="footer-quote">
-      FROM 2012 TO 2026 — STORIES AND MEMORIES KEPT IN THIS SPACE. HERE'S TO THE CHAPTERS AHEAD.
-    </p>
-    <div class="footer-corners">
-      <span>Hyen</span>
-      <span>©2026</span>
-    </div>
-  </footer>
-
-  <!-- 8. MODAL CONNECT HÌNH THOI XANH COBALT (GIỐNG HỆT ẢNH BẠN ĐANG XEM) -->
-  <div id="connectModal" class="connect-modal">
-    <div class="diamond-shape"></div>
-
-    <div class="connect-inner">
-      <div class="connect-title-col">
-        <small>(MADE WITH LOVE)</small>
-        <h2>CONNECT</h2>
-      </div>
-
-      <div class="connect-info-col">
-        <div class="c-group">
-          <div class="c-badge">MILESTONE</div>
-          <div class="c-row">
-            <span>EDITION:</span>
-            <div>Hồ Ngọc Yến — 2012 to 2026</div>
-          </div>
-          <div class="c-row">
-            <span>BIRTHDATE:</span>
-            <div>2012.10.18 • Da Nang City</div>
-          </div>
-        </div>
-
-        <div class="c-group">
-          <div class="c-badge">CONTACT</div>
-          <div class="c-row">
-            <span>DISCORD:</span>
-            <div>x6qt</div>
-          </div>
-          <div class="c-row">
-            <span>INSTAGRAM:</span>
-            <div><a href="#" target="_blank">@h1xmluvs_</a></div>
-          </div>
-          <div class="c-row">
-            <span>EMAIL:</span>
-            <div><a href="mailto:youremail@gmail.com">lequhy1810@gmail.com</a></div>
-          </div>
-          <div class="c-row">
-            <span>TIKTOK:</span>
-            <div><a href="#" target="_blank">tiktok.com/@hy.sxk1</a></div>
-          </div>
-        </div>
-
-        <div class="connect-bottom-bar">
-          <span>© 2026 HYEN. ALL RIGHTS RESERVED.</span>
-          <button class="close-modal-btn" onclick="closeConnect()">CLOSE ✕</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-wm-left">HYEN</div>
-    <div class="modal-wm-right">©2026</div>
-  </div>
-
-  <!-- LIGHTBOX PHÓNG TO ẢNH TRONG MY STORY -->
-  <div id="lightbox" class="lightbox" onclick="closeLightbox()">
-    <img id="lightboxImg" src="" alt="">
-    <div id="lightboxCap" class="lightbox-cap"></div>
-  </div>
-
-  <script>
-    // 1. Chuyển chế độ DAY / NIGHT
-    function setTheme(mode) {
-      document.body.classList.toggle('night', mode === 'night');
-      document.getElementById('dayBtn').classList.toggle('active', mode === 'day');
-      document.getElementById('nightBtn').classList.toggle('active', mode === 'night');
-    }
-
-    // 2. Mở / Đóng Modal CONNECT hình thoi
-    function openConnect() {
-      document.getElementById('connectModal').classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-    function closeConnect() {
-      document.getElementById('connectModal').classList.remove('open');
-      document.body.style.overflow = '';
-    }
-
-    // 3. Phóng to ảnh trong mục My Story
-    function openLightbox(card) {
-      const img = card.querySelector('img');
-      const cap = card.querySelector('.story-caption');
-      document.getElementById('lightboxImg').src = img.src;
-      document.getElementById('lightboxCap').textContent = cap ? cap.textContent : '';
-      document.getElementById('lightbox').classList.add('open');
-    }
-    function closeLightbox() {
-      document.getElementById('lightbox').classList.remove('open');
-    }
-
-    // 4. Form lời nhắn + lưu tạm vào trình duyệt (localStorage)
-    const nameInput = document.getElementById('senderName');
-    const msgInput = document.getElementById('senderMsg');
-    const nameCount = document.getElementById('nameCount');
-    const msgCount = document.getElementById('msgCount');
-    const wall = document.getElementById('messages-wall');
-
-    nameInput.addEventListener('input', () => nameCount.textContent = `${nameInput.value.length} / 25`);
-    msgInput.addEventListener('input', () => msgCount.textContent = `${msgInput.value.length} / 200`);
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const saved = JSON.parse(localStorage.getItem('profile_messages') || '[]');
-      saved.forEach(m => addMessageCard(m.name, m.text, m.date));
-    });
-
-    document.getElementById('guestbookForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const name = nameInput.value.trim();
-      const text = msgInput.value.trim();
-      if (!name || !text) return;
-
-      const d = new Date();
-      const dateStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-
-      addMessageCard(name, text, dateStr);
-
-      const saved = JSON.parse(localStorage.getItem('profile_messages') || '[]');
-      saved.unshift({ name, text, date: dateStr });
-      localStorage.setItem('profile_messages', JSON.stringify(saved));
-
-      this.reset();
-      nameCount.textContent = '0 / 25';
-      msgCount.textContent = '0 / 200';
-    });
-
-    function addMessageCard(name, text, dateStr) {
-      const card = document.createElement('div');
-      card.className = 'wall-card';
-      card.innerHTML = `
-        <div class="wall-head">
-          <span class="wall-name">${escapeHTML(name)}</span>
-          <span class="wall-date">${dateStr}</span>
-        </div>
-        <p class="wall-text">${escapeHTML(text)}</p>
-      `;
-      wall.prepend(card);
-    }
-
-    function escapeHTML(str) {
-      return str.replace(/[&<>'"]/g, t => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[t]));
-    }
-  </script>
-</body>
-</html>
